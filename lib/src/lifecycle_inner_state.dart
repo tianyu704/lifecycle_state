@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'route_name_util.dart';
-import 'navigator_manger.dart';
 import 'package:event_bus/event_bus.dart';
 
 ///

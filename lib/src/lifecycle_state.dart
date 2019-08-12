@@ -1,62 +1,71 @@
 import 'package:flutter/material.dart';
 
-import 'route_name_util.dart';
-import 'navigator_manger.dart';
-
 ///
 /// Create by Hugo.Guo
-/// Date: 2019-08-08
+/// Date: 2019-08-09
 ///
-abstract class LifecycleState<T extends StatefulWidget> extends State<T>
-    with WidgetsBindingObserver {
-  bool _onResumed = false; //页面展示标记
-  bool _onPause = false; //页面暂停标记
-  String _className;
+/// Register the RouteObserver as a navigation observer.
+final RouteObserver<PageRoute> routeObserver = RouteObserver<PageRoute>();
 
-  get className => _className;
+abstract class LifecycleState<T extends StatefulWidget> extends State<T>
+    with WidgetsBindingObserver, RouteAware {
+  String tag = T.toString();
+
+  // 参照State中写法，防止子类获取不到正确的widget。
+  T get widget => super.widget;
+
+  //是否在栈顶
+  bool _isTop = false;
 
   @override
   void initState() {
     // TODO: implement initState
-    _className = RouteNameUtil.getRouteNameWithId(context);
-    NavigatorManger().addWidget(_className);
-    WidgetsBinding.instance.addObserver(this);
-    onCreate();
     super.initState();
+    onCreate();
+    onResume();
+    onLoadData();
+    WidgetsBinding.instance.addObserver(this);
   }
 
   @override
   void deactivate() {
     // TODO: implement deactivate
-    //说明是被覆盖了
-    if (NavigatorManger().isSecondTop(_className)) {
-      if (!_onPause) {
-        onPause();
-        _onPause = true;
-      } else {
-        onResume();
-        _onPause = false;
-      }
-    } else if (NavigatorManger().isTopPage(_className)) {
-      if (!_onPause) {
-        onPause();
-      }
-    }
     super.deactivate();
+//    log("deactivate");
   }
 
   @override
-  Widget build(BuildContext context) {
-//    log("------buildbuild---build");
-    if (!_onResumed) {
-      //说明是 初次加载
-      if (NavigatorManger().isTopPage(_className)) {
-        _onResumed = true;
-        onResume();
-        onLoadData();
-      }
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+//    log("AppLifecycleState:$state");
+    // TODO: implement didChangeAppLifecycleState
+    super.didChangeAppLifecycleState(state);
+    switch (state) {
+      case AppLifecycleState.resumed:
+        if (_isTop) {
+          onForeground();
+          onResume();
+        }
+        break;
+      case AppLifecycleState.inactive:
+        break;
+      case AppLifecycleState.paused:
+        if (_isTop) {
+          onBackground();
+          onPause();
+        }
+        break;
+      case AppLifecycleState.suspending:
+        break;
+      default:
+        break;
     }
-    return buildWidget(context);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+//    log("didChangeDependencies");
+    routeObserver.subscribe(this, ModalRoute.of(context));
   }
 
   @override
@@ -64,58 +73,80 @@ abstract class LifecycleState<T extends StatefulWidget> extends State<T>
     // TODO: implement dispose
     onDestroy();
     WidgetsBinding.instance.removeObserver(this);
-    _onResumed = false;
-    _onPause = false;
-    //把改页面 从 页面列表中 去除
-    NavigatorManger().removeWidget(_className);
+    routeObserver.unsubscribe(this);
     super.dispose();
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    // TODO: implement didChangeAppLifecycleState
-    //此处可以拓展 是不是从前台回到后台
-    if (state == AppLifecycleState.resumed) {
-      //on resume
-      if (NavigatorManger().isTopPage(_className)) {
-        onForeground();
-        onResume();
-      }
-    } else if (state == AppLifecycleState.paused) {
-      //onpause
-      if (NavigatorManger().isTopPage(_className)) {
-        onBackground();
-        onPause();
-      }
-    }
-    super.didChangeAppLifecycleState(state);
+  void didPush() {
+    // TODO: implement didPush
+    super.didPush();
+//    log("didPush");
+    _isTop = true;
   }
 
-  ///初始化一些变量 相当于 onCreate ， 放一下 初始化数据操作
-  void onCreate() {}
+  @override
+  void didPushNext() {
+    // TODO: implement didPushNext
+    super.didPushNext();
+//    log("didPushNext");
+    onPause();
+    _isTop = false;
+  }
 
-  ///相当于onResume, 只要页面来到栈顶， 都会调用此方法，网络请求可以放在这个方法
-  void onResume() {}
+  @override
+  void didPop() {
+    // TODO: implement didPop
+    super.didPop();
+//    log("didPop");
+    onPause();
+  }
 
-  ///页面被覆盖,暂停
-  void onPause() {}
+  @override
+  void didPopNext() {
+    // TODO: implement didPopNext
+    super.didPopNext();
+//    log("didPopNext");
+    onResume();
+    _isTop = true;
+  }
 
-  /// 加载数据
-  void onLoadData() {}
+  /// 用于让子类去实现的初始化方法
+  void onCreate() {
+    log("onCreate");
+  }
 
-  ///返回UI控件 相当于setContentView()
-  Widget buildWidget(BuildContext context);
+  /// 用于让子类去实现的不可见变为可见时的方法
+  void onResume() {
+    log("onResume");
+  }
 
-  ///app切回到后台
-  void onBackground() {}
+  ///加载数据
+  void onLoadData() {
+    log("onLoadData");
+  }
 
-  ///app切回到前台
-  void onForeground() {}
+  /// 用于让子类去实现的可见变为不可见时调用的方法。
+  void onPause() {
+    log("onPause");
+  }
 
-  ///页面注销方法
-  void onDestroy() {}
+  /// 用于让子类去实现的销毁方法。
+  void onDestroy() {
+    log("onDestroy");
+  }
 
-  void log(String log) {
-    debugPrint(_className + "---->" + log);
+  /// app切回到后台
+  void onBackground() {
+    log("onBackground");
+  }
+
+  /// app切回到前台
+  void onForeground() {
+    log("onForeground");
+  }
+
+  log(String log) {
+    debugPrint('$tag --> $log');
   }
 }
