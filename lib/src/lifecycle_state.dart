@@ -113,37 +113,37 @@ abstract class LifecycleState<T extends StatefulWidget> extends State<T>
 
   /// 用于让子类去实现的初始化方法
   void onCreate() {
-    log("onCreate");
+//    log("onCreate");
   }
 
   /// 用于让子类去实现的不可见变为可见时的方法
   void onResume() {
-    log("onResume");
+//    log("onResume");
   }
 
   ///加载数据
   void onLoadData() {
-    log("onLoadData");
+//    log("onLoadData");
   }
 
   /// 用于让子类去实现的可见变为不可见时调用的方法。
   void onPause() {
-    log("onPause");
+//    log("onPause");
   }
 
   /// 用于让子类去实现的销毁方法。
   void onDestroy() {
-    log("onDestroy");
+//    log("onDestroy");
   }
 
   /// app切回到后台
   void onBackground() {
-    log("onBackground");
+//    log("onBackground");
   }
 
   /// app切回到前台
   void onForeground() {
-    log("onForeground");
+//    log("onForeground");
   }
 
   log(String log) {
