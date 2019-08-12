@@ -10,6 +10,10 @@ lifecycle_state:
     git:
       url: "https://github.com/tianyu704/lifecycle_state.git"
 ```
+or
+```
+lifecycle_state: ^0.0.1
+```
 ### MaterialApp中添加`navigatorObservers: [routeObserver]`
 ```
 import 'package:lifecycle_state/lifecycle_state.dart';
