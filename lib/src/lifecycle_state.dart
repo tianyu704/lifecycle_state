@@ -54,8 +54,6 @@ abstract class LifecycleState<T extends StatefulWidget> extends State<T>
           onPause();
         }
         break;
-      case AppLifecycleState.suspending:
-        break;
       default:
         break;
     }
