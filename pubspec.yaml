@@ -1,7 +1,6 @@
 name: lifecycle_state
 description: A flutter package similar to Android&#x27;s lifecycle.
-version: 0.0.1
-author: tianyu704 <839629712@qq.com>
+version: 0.0.2
 homepage: https://github.com/tianyu704/lifecycle_state
 
 environment:
@@ -10,7 +9,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  event_bus: ^1.1.0
+  event_bus: ^2.0.0
 
 dev_dependencies:
   flutter_test:

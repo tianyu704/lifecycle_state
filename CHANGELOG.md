@@ -1,3 +1,6 @@
-## [0.0.1] - TODO: Add release date.
+## [0.0.1] - First
 
-* TODO: Describe initial release.
+* publish
+
+## [0.0.2] - Update
+* update event_bus version
